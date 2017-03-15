@@ -22,14 +22,15 @@ public class CentralRequestHandler {
 	throws JSONException, UnirestException {
 
 		String userQuery = uriInfo.getRequestUri().getQuery();
-		JSONObject json = new JSONObject();
+		//JSONObject json = null;// = new JSONObject();
 		HttpResponse<JsonNode> response = 
 				   Unirest.get("http://api.auroras.live/v1/?"+userQuery)       
 				   .header("cookie", "PHPSESSID=MW2MMg7reEHx0vQPXaKen0")       
 				   .asJson();   
-		   json = response.getBody().getObject();  
-		   //json.put("Attribution", "Powered by Auroras.live");   
-		   return Response.status(200).entity(response.getBody().toString()).build();    
+			JSONObject json = new JSONObject(response.getBody());
+		   json.put("Attribution", "Powered by Auroras.live");
+		   //return Response.status(200).entity(response.getBody().toString()).build(); 
+		   return Response.status(200).entity(json.toString()).build();
 	}
 	
 }  
