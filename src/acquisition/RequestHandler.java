@@ -21,7 +21,7 @@ import processing.DataRetriever;
 public class RequestHandler {
 
 	/**
-	 * This method is called whend the user client makes a request.
+	 * This method is called when the user client makes a request.
 	 * @param uriInfo
 	 * @return
 	 * @throws UnirestException
@@ -30,9 +30,24 @@ public class RequestHandler {
 	@GET
 	@Produces({"image/png","application/json","text/plain"}) // The 3 types of responses this server can produce
 	public Response HandleRequest (@Context UriInfo uriInfo) throws UnirestException {
-		// Call the DataRetriever to get the appropriate imformation from the main aurora server
-		// and return the information to the client (attribution is automatically handled by FetchAurora)
-		return DataRetriever.FetchAurora(uriInfo);
+		if (!uriInfo.getRequestUri().toString().contains("?type")){
+			return Response.status(400)
+					.entity("Welcome to the SENG 401 - Group 1 - Proxy Server for Auroras.live\nTip: We have not recieved a request, please add a request query!\n")
+					.type("text/plain")
+					.build();
+		}
+		else{
+			try{
+				// Call the DataRetriever to get the appropriate imformation from the main aurora server
+				// and return the information to the client (attribution is automatically handled by FetchAurora)
+				return DataRetriever.FetchAurora(uriInfo);
+			}catch (Exception e){
+				return Response.status(400)
+						.entity("Aurora Server did not understand the request, please check your request")
+						.type("text/plain")
+						.build();
+			}
+		}
 	}
 	
 }
