@@ -16,6 +16,6 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>REST Web Service</servlet-name>
-    <url-pattern>/restsample/*</url-pattern>
+    <url-pattern>/request/*</url-pattern>
   </servlet-mapping>
 </web-app>
