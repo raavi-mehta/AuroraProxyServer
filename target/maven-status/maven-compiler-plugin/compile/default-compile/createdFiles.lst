@@ -1,2 +1,3 @@
 processing\DataRetriever.class
 acquisition\RequestHandler.class
+processing\ModuleRequestProcessors.class
