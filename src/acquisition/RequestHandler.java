@@ -27,7 +27,7 @@ public class RequestHandler {
 	 */
 	@Path("")
 	@GET
-	@Produces({"image/png", "application/json", "text/plain"}) // The 3 types of responses this server can produce
+	@Produces({"image/jpeg", "application/json", "text/plain"}) // The 3 types of responses this server can produce
 	public Response HandleRequest (@Context UriInfo uriInfo) throws UnirestException {
 		if (!uriInfo.getRequestUri().toString().contains("?type")) {
 			return Response.status(400)

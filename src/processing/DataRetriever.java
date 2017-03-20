@@ -71,7 +71,7 @@ public class DataRetriever {
 			// Return the required image
 			return Response.status(response.getStatus())
 				.entity(response.getBody())
-				.type("image/png")
+				.type("image/jpeg")
 				.build();
 			}
 		catch(Exception e){
