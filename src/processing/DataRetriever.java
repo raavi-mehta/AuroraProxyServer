@@ -67,9 +67,9 @@ public class DataRetriever {
 			   Unirest.get("http://api.auroras.live/v1/?" + userQuery)       
 			   .header("cookie", "PHPSESSID=MW2MMg7reEHx0vQPXaKen0")       
 			   .asBinary();
-		
+			
 			// Return the required image
-			return Response.status(200)
+			return Response.status(response.getStatus())
 				.entity(response.getBody())
 				.type("image/png")
 				.build();
@@ -102,7 +102,7 @@ public class DataRetriever {
 			json.put("attribution", "Powered by Auroras.live!");
 		
 			// Return appropriate response
-			return Response.status(200)
+			return Response.status(response.getStatus())
 				.entity(response.getBody().toString())
 				.type("application/json")
 				.build();

@@ -86,7 +86,7 @@ public class ModuleRequestProcessors {
 				   .asBinary();
 		
 		// Send the obtained image
-		return Response.status(200)
+		return Response.status(gm_response.getStatus())
 				.entity(gm_response.getBody())
 				.type("image/png")
 				.build();
@@ -124,7 +124,7 @@ public class ModuleRequestProcessors {
 			// attribution to the array instead of appending it to each location
 			json.put("attribution", "Powered by Auroras.live!");
 	
-			return Response.status(200)
+			return Response.status(response.getStatus())
 				.entity(json.toString())
 				.type("application/json")
 				.build();
