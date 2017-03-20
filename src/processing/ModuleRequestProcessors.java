@@ -13,24 +13,28 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
 /**
- * This class consists of the methods responsible for processing retrival requests.
- * These module requests require some sort of logic to process the user request hence
- * for modularity are placed here.
+ * This class consists of the methods responsible for processing retrieval 
+ * requests. These module requests require some sort of logic to process the
+ * user request hence for modularity are placed here.
  * @author SENG 401: Group 1
- *
  */
 public class ModuleRequestProcessors {
 	
 	/**
 	 * Handle the image retrieval from the google maps servers.
-	 * Accepts 2 types of requests map and gmap 
-	 * map - first gets the longitude and latitude from the aurora locations API module
-	 * gmap - directly send the id of the location to the google map server
+	 * Accepts 2 types of requests map and gmap:
+	 * 
+	 * map:
+	 * 		First gets the longitude and latitude from the aurora locations
+	 * 		API module.
+	 * 
+	 * gmap
+	 * 		Directly send the id of the location to the google map server.
 	 * @param uriInfo
 	 * @return The required image in PNG format
 	 * @throws UnirestException
 	 */
-	public static Response GoogleMaps_Processor(UriInfo uriInfo) throws UnirestException{
+	public static Response googleMapsProcessor(UriInfo uriInfo) throws UnirestException {
 		
 		// Create a map of the user entered query parameters to get id and other required information
 		MultivaluedMap<String, String> Params = uriInfo.getQueryParameters();
@@ -42,7 +46,7 @@ public class ModuleRequestProcessors {
 		String googleMapsQuery = "";
 		
 		// if the request type is "map"
-		if(Params.getFirst("type").equals("map")){
+		if(Params.getFirst("type").equals("map")) {
 
 			// Get the locations data from the auroras locations api module
 			HttpResponse<JsonNode> response = Unirest
@@ -89,45 +93,47 @@ public class ModuleRequestProcessors {
 	}
 	
 	/**
-	 * Aurora's reponse for the location module request consists of a set of json objects which require
-	 * a different method a attribution association. 
-	 * Code is also presented to add attribution as an extra json onject in the set (Disabled for now).
+	 * Aurora's response for the location module request consists of a set of
+	 * json objects which require a different method a attribution association.
+	 * Code is also presented to add attribution as an extra json object in the
+	 * set (Disabled for now).
 	 * @param userQuery
-	 * @return
+	 * @return Response
 	 * @throws UnirestException
 	 */
-	public static Response LocationRequest_Processor (String userQuery) throws UnirestException{
+	public static Response locationRequestProcessor (String userQuery) throws UnirestException{
 		
 		// Request the required json from the API
 		HttpResponse<JsonNode> response = 
-				   Unirest.get("http://api.auroras.live/v1/?" + userQuery)             
-				   .asJson();
-		try{
-			
+		   Unirest.get("http://api.auroras.live/v1/?" + userQuery)             
+		   .asJson();
 		
-		/*
-		 * The Following commented out code adds the attribution to the JSONArray to be recieved by the locations 
-		 * module	
-		JSONArray JArray = new JSONArray(response.getBody().toString());
-		JSONObject Attribution = new JSONObject();
-		Attribution.put("attribution","Powered by Auroras.live!");
-		JArray.put(Attribution);
-		*/
-		JSONObject json = new JSONObject(response.getBody());
-		// The Auroras API returns a JSONArray, so we append the attribution to the array instead of appending it to
-		// each location
-		json.put("attribution", "Powered by Auroras.live!");
-
-		return Response.status(200)
+		try {
+			/*
+			 * The Following commented out code adds the attribution to the JSONArray to be recieved by the locations 
+			 * module	
+			JSONArray JArray = new JSONArray(response.getBody().toString());
+			JSONObject Attribution = new JSONObject();
+			Attribution.put("attribution","Powered by Auroras.live!");
+			JArray.put(Attribution);
+			*/
+			
+			JSONObject json = new JSONObject(response.getBody());
+			
+			// The Aurora's API returns a JSONArray, so we append the
+			// attribution to the array instead of appending it to each location
+			json.put("attribution", "Powered by Auroras.live!");
+	
+			return Response.status(200)
 				.entity(json.toString())
 				.type("application/json")
 				.build();
-		}catch(JSONException e){
+		} catch(JSONException e) {
 			// Invalid Response or Request
 			return Response.status(400)
-					.entity("Aurora Server did not understand the request, please check your request")
-					.type("text/plain")
-					.build();
+				.entity("Aurora Server did not understand the request, please check your request")
+				.type("text/plain")
+				.build();
 		}
 	}
 }
