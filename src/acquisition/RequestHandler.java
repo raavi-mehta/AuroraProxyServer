@@ -1,7 +1,5 @@
 package acquisition;
 
-import java.util.concurrent.TimeUnit;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -9,7 +7,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
 import net.sf.ehcache.Cache;
@@ -31,7 +28,6 @@ import processing.DataRetriever;
 @Path("/") 
 public class RequestHandler {
 	
-	private static CacheManager manager = null;
 	private static Cache cache = setupCache();
 	
 	/**
@@ -56,15 +52,6 @@ public class RequestHandler {
 			try {
 				// Call the DataRetriever to get the appropriate information from the main aurora server
 				// and return the information to the client (attribution is automatically handled by FetchAurora)
-				
-//				setup cache
-//				
-//				check if query is in cache
-//					return that
-//							
-//				if not call fetch arorA
-//					put thing in cache
-//				return response
 				String userShit = uriInfo.getRequestUri().getQuery();
 				System.out.println(userShit);
 				try {
@@ -107,27 +94,5 @@ public class RequestHandler {
 	public static Cache getCache() {
 		return cache;
 	}
-	
-//	public static void main(String[] args) throws InterruptedException {
-//		
-//		CacheManager manager = CacheManager.create();
-//		
-//		System.out.println("Hello");
-//		Cache syscache = new Cache(
-//		  new CacheConfiguration("syscache", 10000)
-//		    .memoryStoreEvictionPolicy(MemoryStoreEvictionPolicy.LFU)
-//		    .eternal(false)
-//		    .timeToLiveSeconds(4)
-//		    .timeToIdleSeconds(60)
-//		    .diskExpiryThreadIntervalSeconds(0)
-//		    .persistence(new PersistenceConfiguration().strategy(Strategy.LOCALTEMPSWAP)));
-//		
-//		manager.addCache(syscache);
-//		syscache.put(new Element("key1", "stuff"));
-//		TimeUnit.SECONDS.sleep(5);
-//		System.out.println(syscache.get("key1").getObjectValue());
-//		
-//		
-//	}
 
 }
