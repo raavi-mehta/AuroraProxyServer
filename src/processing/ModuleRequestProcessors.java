@@ -34,7 +34,7 @@ public class ModuleRequestProcessors {
 	 * @return The required image in PNG format
 	 * @throws UnirestException
 	 */
-	public static Response googleMapsProcessor(UriInfo uriInfo) throws UnirestException {
+	public static HttpResponse<InputStream> googleMapsProcessor(UriInfo uriInfo) throws UnirestException {
 		
 		// Create a map of the user entered query parameters to get id and other required information
 		MultivaluedMap<String, String> Params = uriInfo.getQueryParameters();
@@ -68,10 +68,11 @@ public class ModuleRequestProcessors {
 				}
 			}
 			if(lat.equals("")){
-				return Response.status(400)
-						.entity("Requested Location id is not listed in the API Locations Module Response")
-						.type("text/plain")
-						.build();
+				return null;
+//				return Response.status(400)
+//						.entity("Requested Location id is not listed in the API Locations Module Response")
+//						.type("text/plain")
+//						.build();
 			}
 			// Generate the google map query
 			googleMapsQuery = "https://maps.googleapis.com/maps/api/staticmap?center="+ lat + "," + lon + 
@@ -91,10 +92,11 @@ public class ModuleRequestProcessors {
 				   .asBinary();
 		
 		// Send the obtained image
-		return Response.status(gm_response.getStatus())
-				.entity(gm_response.getBody())
-				.type("image/jpeg")
-				.build();
+//		return Response.status(gm_response.getStatus())
+//				.entity(gm_response.getBody())
+//				.type("image/jpeg")
+//				.build();
+		return gm_response;
 	}
 	
 	/**

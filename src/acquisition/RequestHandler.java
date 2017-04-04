@@ -9,14 +9,7 @@ import javax.ws.rs.core.UriInfo;
 
 import com.mashape.unirest.http.exceptions.UnirestException;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
-import net.sf.ehcache.config.CacheConfiguration;
-import net.sf.ehcache.config.PersistenceConfiguration;
-import net.sf.ehcache.config.PersistenceConfiguration.Strategy;
-import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
-import processing.DataRetriever; 
+import processing.CacheController; 
 
 /**
  * This class handles all the requests a user makes. 
@@ -28,7 +21,7 @@ import processing.DataRetriever;
 @Path("/") 
 public class RequestHandler {
 	
-	private static Cache cache = setupCache();
+	
 	
 	/**
 	 * This method is called when the user client makes a request.
@@ -52,20 +45,20 @@ public class RequestHandler {
 			try {
 				// Call the DataRetriever to get the appropriate information from the main aurora server
 				// and return the information to the client (attribution is automatically handled by FetchAurora)
-				String userShit = uriInfo.getRequestUri().getQuery();
-				System.out.println(userShit);
-				try {
-					Response x = (Response) cache.get(userShit).getObjectValue();
-					System.out.println("In Cache");
-					return x;
-				} catch (NullPointerException e) {
-					Response x = DataRetriever.FetchAurora(uriInfo);
-					cache.put(new Element(userShit, x));
-					System.out.println("Put in cache");
-					return x;
-				}
-				
-
+//				String userShit = uriInfo.getRequestUri().getQuery();
+//				System.out.println(userShit);
+//				try {
+//					Response x = (Response) cache.get(userShit).getObjectValue();
+//					System.out.println("In Cache");
+//					return x;
+//				} catch (NullPointerException e) {
+//					Response x = DataRetriever.FetchAurora(uriInfo);
+//					cache.put(new Element(userShit, x));
+//					System.out.println("Put in cache");
+//					return x;
+//				}
+				//return DataRetriever.FetchAurora(uriInfo);
+				return CacheController.cacheProcess(uriInfo);
 			} catch (Exception e) {
 				return Response.status(400)
 						.entity("Aurora Server did not understand the request, please check your request")
@@ -73,26 +66,6 @@ public class RequestHandler {
 						.build();
 			}
 		}
-	}
-	
-	private static Cache setupCache() {
-		//Create a Cache specifying its configuration.
-		CacheManager manager = CacheManager.create();
-		Cache syscache = new Cache(
-		  new CacheConfiguration("syscache", 10000)
-		    .memoryStoreEvictionPolicy(MemoryStoreEvictionPolicy.LFU)
-		    .eternal(false)
-		    .timeToLiveSeconds(60)
-		    .timeToIdleSeconds(30)
-		    .diskExpiryThreadIntervalSeconds(0)
-		    .persistence(new PersistenceConfiguration().strategy(Strategy.LOCALTEMPSWAP)));
-		 
-		manager.addCache(syscache);
-		return syscache;
-	}
-	
-	public static Cache getCache() {
-		return cache;
 	}
 
 }

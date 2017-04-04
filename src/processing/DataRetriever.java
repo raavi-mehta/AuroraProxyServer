@@ -26,7 +26,7 @@ public class DataRetriever {
 	 * @throws JSONException
 	 * @throws UnirestException
 	 */
-	public static Response FetchAurora (UriInfo uriInfo) throws JSONException,
+	public static HttpResponse<InputStream> FetchAuroraImages (UriInfo uriInfo) throws JSONException,
 		UnirestException {
 		
 		// Generate a User Query String from the UriInfo
@@ -40,46 +40,57 @@ public class DataRetriever {
 		else if(userQuery.contains("type=map") || userQuery.contains("type=gmap")) {
 			return ModuleRequestProcessors.googleMapsProcessor(uriInfo);
 		}
+		return null;
 		
-		// If the request is needed to be processed by the locations module
-		else if (userQuery.contains("type=locations")) {
-			return ModuleRequestProcessors.locationRequestProcessor(userQuery);
-		}
-		
-		/* All other module requests are served here
-		 * In case of improper requests, such are sent to the Aurora server and
-		 * if an invalid response is received an error message is produced.
-		*/
-		else { //General Request Processing
-			return GeneralRequest(userQuery);
-		}
+	
 	}
 	
+	
+	public static Response FetchAuroraJson (UriInfo uriInfo) throws JSONException,
+	UnirestException {
+	
+	// Generate a User Query String from the UriInfo
+	String userQuery = uriInfo.getRequestUri().getQuery();
+	
+	// If the request is needed to be processed by the locations module
+	if (userQuery.contains("type=locations")) {
+		return ModuleRequestProcessors.locationRequestProcessor(userQuery);
+	}
+	
+	/* All other module requests are served here
+	 * In case of improper requests, such are sent to the Aurora server and
+	 * if an invalid response is received an error message is produced.
+	*/
+	else { //General Request Processing
+		return GeneralRequest(userQuery);
+	}
+}
 	/**
 	 * This method is used for retrieving images from the aurora API.
 	 * @param userQuery
 	 * @return an http response with the retrieved image as a PNG
 	 */
-	public static Response AuroraImageRetrieval(String userQuery) {
-		try {
+	public static HttpResponse<InputStream> AuroraImageRetrieval(String userQuery) {
+
 		// Receive Image from the Aurora Server
-			HttpResponse<InputStream> response = 
-			   Unirest.get("http://api.auroras.live/v1/?" + userQuery)       
-			   .header("cookie", "PHPSESSID=MW2MMg7reEHx0vQPXaKen0")       
-			   .asBinary();
+			HttpResponse<InputStream> response = null;
+			try {
+				response = Unirest.get("http://api.auroras.live/v1/?" + userQuery)       
+				   .header("cookie", "PHPSESSID=MW2MMg7reEHx0vQPXaKen0")       
+				   .asBinary();
+			} catch (UnirestException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
 			// Return the required image
-			return Response.status(response.getStatus())
-				.entity(response.getBody())
-				.type("image/jpeg")
-				.build();
-			}
-		catch(Exception e){
-			return Response.status(400)
-				.entity("Aurora Server did not understand the request, please check your request")
-				.type("text/plain")
-				.build();
-		}
+//			return Response.status(response.getStatus())
+//				.entity(response.getBody())
+//				.type("image/jpeg")
+//				.build();
+			return response;
+			
+
 	}
 	
 	/**
