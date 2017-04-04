@@ -1,4 +1,4 @@
-package CacheManagement;
+package cachemanagement;
 
 public class CacheChecker {
 

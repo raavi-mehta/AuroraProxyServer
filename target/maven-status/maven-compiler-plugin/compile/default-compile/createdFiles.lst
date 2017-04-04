@@ -1,3 +1,7 @@
 processing\DataRetriever.class
-acquisition\RequestHandler.class
+cachemanagement\QueryProcessor.class
+processing\CacheController.class
 processing\ModuleRequestProcessors.class
+cachemanagement\CacheUpdater.class
+cachemanagement\CacheChecker.class
+acquisition\RequestHandler.class
