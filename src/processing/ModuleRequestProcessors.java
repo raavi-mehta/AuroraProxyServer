@@ -1,12 +1,15 @@
 package processing;
 
 import java.io.InputStream;
-import javax.ws.rs.core.MultivaluedMap;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
@@ -34,19 +37,15 @@ public class ModuleRequestProcessors {
 	 * @return The required image in PNG format
 	 * @throws UnirestException
 	 */
-	public static HttpResponse<InputStream> googleMapsProcessor(UriInfo uriInfo) throws UnirestException {
+	public static HttpResponse<InputStream> googleMapsProcessor(String userQuery) throws UnirestException {
 		
-		// Create a map of the user entered query parameters to get id and other required information
-		MultivaluedMap<String, String> Params = uriInfo.getQueryParameters();
-		
-		// id of the location
-		String id = Params.getFirst("id");
+		String id = getQueryMapid(userQuery);
 		
 		//The query which will be built to sent to the google maps server
 		String googleMapsQuery = "";
 		
 		// if the request type is "map"
-		if(Params.getFirst("type").equals("map")) {
+		if(userQuery.contains("type=map")) {
 
 			// Get the locations data from the auroras locations api module
 			HttpResponse<JsonNode> response = Unirest
@@ -97,6 +96,17 @@ public class ModuleRequestProcessors {
 //				.type("image/jpeg")
 //				.build();
 		return gm_response;
+	}
+	
+	private static String getQueryMapid(String query) {  
+	    String[] params = query.split("&");  
+	    Map<String, String> map = new HashMap<String, String>();  
+	    for (String param : params) {  
+	        String name = param.split("=")[0];  
+	        String value = param.split("=")[1];  
+	        map.put(name, value);  
+	    }  
+	    return map.get("id");  
 	}
 	
 	/**

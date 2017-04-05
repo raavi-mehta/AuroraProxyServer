@@ -9,7 +9,8 @@ import javax.ws.rs.core.UriInfo;
 
 import com.mashape.unirest.http.exceptions.UnirestException;
 
-import processing.CacheController; 
+import processing.CacheController;
+import processing.DataRetriever; 
 
 /**
  * This class handles all the requests a user makes. 
@@ -20,9 +21,7 @@ import processing.CacheController;
  */
 @Path("/") 
 public class RequestHandler {
-	
-	
-	
+
 	/**
 	 * This method is called when the user client makes a request.
 	 * @param uriInfo
@@ -32,7 +31,10 @@ public class RequestHandler {
 	@Path("")
 	@GET
 	@Produces({"image/jpeg", "application/json", "text/plain"}) // The 3 types of responses this server can produce
-	public Response HandleRequest (@Context UriInfo uriInfo) throws UnirestException {
+	public Response HandleRequest(@Context UriInfo uriInfo) throws UnirestException {
+		
+		String userQuery = uriInfo.getRequestUri().getQuery();
+		
 		if (!uriInfo.getRequestUri().toString().contains("?type")) {
 			return Response.status(400)
 					.entity("Welcome to the SENG 401 - Group 1 - Proxy Server"
@@ -43,22 +45,14 @@ public class RequestHandler {
 		}
 		else {
 			try {
-				// Call the DataRetriever to get the appropriate information from the main aurora server
-				// and return the information to the client (attribution is automatically handled by FetchAurora)
-//				String userShit = uriInfo.getRequestUri().getQuery();
-//				System.out.println(userShit);
-//				try {
-//					Response x = (Response) cache.get(userShit).getObjectValue();
-//					System.out.println("In Cache");
-//					return x;
-//				} catch (NullPointerException e) {
-//					Response x = DataRetriever.FetchAurora(uriInfo);
-//					cache.put(new Element(userShit, x));
-//					System.out.println("Put in cache");
-//					return x;
-//				}
+				if (userQuery.contains("&no-caching=true")) {
+					userQuery = userQuery.replace("&no-caching=true", "");
+					System.out.println("No-Caching Enabled");
+					return DataRetriever.FetchAurora(userQuery);
+				}
+				
 				//return DataRetriever.FetchAurora(uriInfo);
-				return CacheController.cacheProcess(uriInfo);
+				return CacheController.cacheProcess(userQuery);
 			} catch (Exception e) {
 				return Response.status(400)
 						.entity("Aurora Server did not understand the request, please check your request")
@@ -68,4 +62,26 @@ public class RequestHandler {
 		}
 	}
 
+	@Path("admin/stats")
+	@GET
+	@Produces("text/plain") 
+	public Response StatsView() {
+		return Response.status(200)
+				.entity("Hits: " + CacheController.getHits() + System.lineSeparator() + "Misses: " + CacheController.getMisses())
+				.type("text/plain")
+				.build();
+		
+	}
+	
+	@Path("admin/clear")
+	@GET
+	@Produces("text/plain") 
+	public Response ClearCache() {
+		CacheController.clearCache();
+		return Response.status(200)
+				.entity("Cache Cleared.")
+				.type("text/plain")
+				.build();
+		
+	}
 }

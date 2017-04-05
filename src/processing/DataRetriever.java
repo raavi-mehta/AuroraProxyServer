@@ -1,10 +1,12 @@
 package processing;
 
 import java.io.InputStream;
+
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
@@ -18,6 +20,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
  */
 public class DataRetriever {  
 
+
 	/**
 	 * A fork method that directs the incoming request to the appropriate
 	 * processing module or retrieval method.
@@ -26,11 +29,52 @@ public class DataRetriever {
 	 * @throws JSONException
 	 * @throws UnirestException
 	 */
-	public static HttpResponse<InputStream> FetchAuroraImages (UriInfo uriInfo) throws JSONException,
+	public static Response FetchAurora (String userQuery) throws JSONException,
 		UnirestException {
 		
-		// Generate a User Query String from the UriInfo
-		String userQuery = uriInfo.getRequestUri().getQuery();
+		HttpResponse<InputStream> imgR = null;
+		
+		// If the Module referred is such that it is supposed to return an image
+		if (userQuery.contains("type=embed") || userQuery.contains("type=images&image")) {
+			imgR = AuroraImageRetrieval(userQuery);
+			return Response.status(imgR.getStatus())
+					.entity(imgR.getBody())
+					.type("image/jpeg")
+					.build();
+		}
+		
+		else if(userQuery.contains("type=map") || userQuery.contains("type=gmap")) {
+			imgR = ModuleRequestProcessors.googleMapsProcessor(userQuery);
+			return Response.status(imgR.getStatus())
+					.entity(imgR.getBody())
+					.type("image/jpeg")
+					.build();
+		}
+		
+		// If the request is needed to be processed by the locations module
+		else if (userQuery.contains("type=locations")) {
+			return ModuleRequestProcessors.locationRequestProcessor(userQuery);
+		}
+		
+		/* All other module requests are served here
+		 * In case of improper requests, such are sent to the Aurora server and
+		 * if an invalid response is received an error message is produced.
+		*/
+		else { //General Request Processing
+			return GeneralRequest(userQuery);
+		}
+	}
+	/**
+	 * A fork method that directs the incoming request to the appropriate
+	 * processing module or retrieval method.
+	 * @param uriInfo
+	 * @return Appropriate HTTP response to be sent to the client
+	 * @throws JSONException
+	 * @throws UnirestException
+	 */
+	public static HttpResponse<InputStream> FetchAuroraImages (String userQuery) throws JSONException,
+		UnirestException {
+		
 		
 		// If the Module referred is such that it is supposed to return an image
 		if (userQuery.contains("type=embed") || userQuery.contains("type=images&image")) {
@@ -38,7 +82,7 @@ public class DataRetriever {
 		}
 		
 		else if(userQuery.contains("type=map") || userQuery.contains("type=gmap")) {
-			return ModuleRequestProcessors.googleMapsProcessor(uriInfo);
+			return ModuleRequestProcessors.googleMapsProcessor(userQuery);
 		}
 		return null;
 		
@@ -46,24 +90,18 @@ public class DataRetriever {
 	}
 	
 	
-	public static Response FetchAuroraJson (UriInfo uriInfo) throws JSONException,
+	public static Response FetchAuroraLocations (String userQuery) throws JSONException,
 	UnirestException {
-	
-	// Generate a User Query String from the UriInfo
-	String userQuery = uriInfo.getRequestUri().getQuery();
-	
-	// If the request is needed to be processed by the locations module
-	if (userQuery.contains("type=locations")) {
+
 		return ModuleRequestProcessors.locationRequestProcessor(userQuery);
-	}
+
+}
 	
-	/* All other module requests are served here
-	 * In case of improper requests, such are sent to the Aurora server and
-	 * if an invalid response is received an error message is produced.
-	*/
-	else { //General Request Processing
+	public static Response FetchAuroraGeneral (String userQuery) throws JSONException,
+	UnirestException {
+
 		return GeneralRequest(userQuery);
-	}
+
 }
 	/**
 	 * This method is used for retrieving images from the aurora API.

@@ -4,74 +4,96 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 import org.json.JSONException;
 
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
+import cachemanagement.CacheStore;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
-import net.sf.ehcache.config.CacheConfiguration;
-import net.sf.ehcache.config.PersistenceConfiguration;
-import net.sf.ehcache.config.PersistenceConfiguration.Strategy;
-import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
 
 public class CacheController {
 	
-	private static CacheManager manager = setupCache();
+	private static int hits = 0;
+	private static int misses = 0;
 	
-	@SuppressWarnings("unchecked")
-	public static Response cacheProcess(UriInfo uriInfo) throws JSONException, UnirestException {
+
+	public static Response cacheProcess(String userQuery) throws JSONException, UnirestException {
 		
-		String userQuery = uriInfo.getRequestUri().getQuery();
+		CacheManager manager = CacheStore.getCacheManager();
 		
 		if (isImageRequest(userQuery)) {
+			
+			
 			HttpResponse<InputStream> imgR = null;
 			byte[] array = null;
 			try{
-				imgR = (HttpResponse<InputStream>) manager.getCache("syscache").get(userQuery).getObjectValue();
 				array = (byte[]) manager.getCache("imgcache").get(userQuery).getObjectValue();
 				System.out.println("IMG: Found in Cache");
+				hits++;
 			}catch(NullPointerException e){
-				imgR = DataRetriever.FetchAuroraImages(uriInfo);
+				imgR = DataRetriever.FetchAuroraImages(userQuery);
 				try {
 					array = new byte[imgR.getBody().available()];
 					imgR.getBody().read(array);
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
-				manager.getCache("imgcache").put(new Element(userQuery,array));
-				manager.getCache("syscache").put(new Element(userQuery,imgR));
+				if (imgR.getStatus() == 200) 
+					manager.getCache("imgcache").put(new Element(userQuery,array));
+
 				System.out.println("IMG: Not in Cache");
+				misses++;
+				
 			}
-			return Response.status(imgR.getStatus())
+			
+			return Response.status(200)
 					.entity(manager.getCache("imgcache").get(userQuery).getObjectValue())
 					.type("image/jpeg")
 					.build();
-//			HttpResponse<InputStream> imgR = DataRetriever.FetchAuroraImages(uriInfo);
-////			byte [] array = null;
-////			try {
-////				array = new byte[imgR.getBody().available()];
-////				imgR.getBody().read(array);
-////			} catch (IOException e) {
-////				e.printStackTrace();
-////			}
-//			manager.getCache("imgcache").put(new Element(userQuery,imgR));
 			
-
-		} else {
-			Cache syscache = manager.getCache("syscache");
+			
+		} else if(userQuery.contains("type=locations")){
+			
+			
+			
+			Cache syscache = manager.getCache("lcache");
 			try{
 				Response x = (Response) syscache.get(userQuery).getObjectValue();
 				System.out.println("JSON: Found in Cache");
+				hits++;
 				return x;
 			}catch(NullPointerException e){
 				System.out.println("JSON: Not in Cache");
-				Response res = DataRetriever.FetchAuroraJson(uriInfo);
-				syscache.put(new Element(userQuery,res));
+				misses++;
+				Response res = DataRetriever.FetchAuroraLocations(userQuery);
+				if (res.getStatus() == 200) 
+					syscache.put(new Element(userQuery,res));
+				return res;
+			}
+			
+			
+			
+			
+		} else {
+			
+			
+			
+			Cache syscache = manager.getCache("gcache");
+			try{
+				Response x = (Response) syscache.get(userQuery).getObjectValue();
+				System.out.println("JSON: Found in Cache");
+				hits++;
+				return x;
+			}catch(NullPointerException e){
+				System.out.println("JSON: Not in Cache");
+				misses++;
+				Response res = DataRetriever.FetchAuroraGeneral(userQuery);
+				if (res.getStatus() == 200) 
+					syscache.put(new Element(userQuery,res));
 				return res;
 			}
 			
@@ -79,47 +101,23 @@ public class CacheController {
 		}
 	}
 	
+	public static int getHits() {
+		return hits;
+	}
+	
+	public static int getMisses() {
+		return misses;
+	}
 	
 	public static boolean isImageRequest(String userQuery){
 		return (userQuery.contains("type=embed") || userQuery.contains("type=images&image")
 		||userQuery.contains("type=map") || userQuery.contains("type=gmap"));
 	}
 	
-	
-	
-	
-	
-	
-	
-	private static CacheManager setupCache() {
-		//Create a Cache specifying its configuration.
-		CacheManager manager = CacheManager.create();
-		Cache syscache = new Cache(
-		  new CacheConfiguration("syscache", 10000)
-		    .memoryStoreEvictionPolicy(MemoryStoreEvictionPolicy.LFU)
-		    .eternal(false)
-		    .timeToLiveSeconds(60)
-		    .timeToIdleSeconds(30)
-		    .diskExpiryThreadIntervalSeconds(0)
-		    .persistence(new PersistenceConfiguration().strategy(Strategy.LOCALTEMPSWAP)));
-		
-		Cache imgcache = new Cache(
-		  new CacheConfiguration("imgcache", 10000)
-		    .memoryStoreEvictionPolicy(MemoryStoreEvictionPolicy.LFU)
-		    .eternal(false)
-		    .timeToLiveSeconds(60)
-		    .timeToIdleSeconds(30)
-		    .diskExpiryThreadIntervalSeconds(0)
-		    .persistence(new PersistenceConfiguration().strategy(Strategy.LOCALTEMPSWAP)));
-		 
-		manager.addCache(syscache);
-		manager.addCache(imgcache);
-		return manager;
-	}
-	
-	
-	public static CacheManager getCacheManager() {
-		return manager;
+	public static void clearCache() {
+		hits = 0;
+		misses = 0;
+		CacheStore.getCacheManager().clearAll();
 	}
 	
 }
