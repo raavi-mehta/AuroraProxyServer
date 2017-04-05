@@ -95,19 +95,16 @@ public class RequestHandler {
 		MultivaluedMap<String, String> param = uriInfo.getQueryParameters();
 		
 		if (param.containsKey("general")) {
-			System.out.println("flkjf");
 			int lifespan = Integer.parseInt(param.getFirst("general"));
 			CacheController.setGeneralLifespan(lifespan);
 		}
 		
 		if (param.containsKey("location")) {
-			System.out.println("flkjf");
 			int lifespan = Integer.parseInt(param.getFirst("location"));
 			CacheController.setLocationLifespan(lifespan);
 		}
 		
 		if (param.containsKey("image")) {
-			System.out.println("flkjf");
 			int lifespan = Integer.parseInt(param.getFirst("image"));
 			CacheController.setImageLifespan(lifespan);
 		}
