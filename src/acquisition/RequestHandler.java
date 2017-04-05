@@ -4,6 +4,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
@@ -67,10 +68,12 @@ public class RequestHandler {
 	@Produces("text/plain") 
 	public Response StatsView() {
 		return Response.status(200)
-				.entity("Hits: " + CacheController.getHits() + System.lineSeparator() + "Misses: " + CacheController.getMisses())
+				.entity("Hits: " + CacheController.getHits() + System.lineSeparator() +
+						"Misses: " + CacheController.getMisses() + System.lineSeparator() +
+						"Current lifespans (seconds)" + System.lineSeparator() +
+						CacheController.getLifespans())
 				.type("text/plain")
 				.build();
-		
 	}
 	
 	@Path("admin/clear")
@@ -82,6 +85,37 @@ public class RequestHandler {
 				.entity("Cache Cleared.")
 				.type("text/plain")
 				.build();
+	}
+	
+	@Path("admin/lifespan")
+	@GET
+	@Produces("text/plain") 
+	public Response SetCacheLifespans(@Context UriInfo uriInfo) {
 		
+		MultivaluedMap<String, String> param = uriInfo.getQueryParameters();
+		
+		if (param.containsKey("general")) {
+			System.out.println("flkjf");
+			int lifespan = Integer.parseInt(param.getFirst("general"));
+			CacheController.setGeneralLifespan(lifespan);
+		}
+		
+		if (param.containsKey("location")) {
+			System.out.println("flkjf");
+			int lifespan = Integer.parseInt(param.getFirst("location"));
+			CacheController.setLocationLifespan(lifespan);
+		}
+		
+		if (param.containsKey("image")) {
+			System.out.println("flkjf");
+			int lifespan = Integer.parseInt(param.getFirst("image"));
+			CacheController.setImageLifespan(lifespan);
+		}
+		
+		return Response.status(200)
+				.entity("Current lifespans" + System.lineSeparator() +
+						CacheController.getLifespans())
+				.type("text/plain")
+				.build();
 	}
 }

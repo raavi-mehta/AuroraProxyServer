@@ -120,4 +120,38 @@ public class CacheController {
 		CacheStore.getCacheManager().clearAll();
 	}
 	
+	public static void setLocationLifespan(int lifespan) {
+		CacheStore.getCacheManager().getCache("lcache").getCacheConfiguration().timeToLiveSeconds(lifespan);
+	}
+	
+	public static void setImageLifespan(int lifespan) {
+		CacheStore.getCacheManager().getCache("imgcache").getCacheConfiguration().timeToLiveSeconds(lifespan);
+	}
+	
+	public static void setGeneralLifespan(int lifespan) {
+		CacheStore.getCacheManager().getCache("gcache").getCacheConfiguration().timeToLiveSeconds(lifespan);
+	}
+	
+	public static CacheManager getCacheManager() {
+		return CacheStore.getCacheManager();
+	}
+	
+	public static String getLifespans() {
+		return 	"general lifespan: " + getCacheManager().getCache("gcache").getCacheConfiguration().getTimeToLiveSeconds() + System.lineSeparator() +
+				"location lifespan: " + getCacheManager().getCache("lcache").getCacheConfiguration().getTimeToLiveSeconds() + System.lineSeparator() +
+				"image lifespan: " + getCacheManager().getCache("imgcache").getCacheConfiguration().getTimeToLiveSeconds() + System.lineSeparator();
+	}
+	
+//	public static int getGeneralLifespan() {
+//		return CacheStore.getGeneralLifespan();
+//	}
+//	
+//	public static int getLocationLifespan() {
+//		return CacheStore.getLocationLifespan();
+//	}
+//	
+//	public static int getImageLifespan() {
+//		return CacheStore.getImageLifespan();
+//	}
+	
 }
