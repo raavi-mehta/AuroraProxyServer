@@ -1,6 +1,5 @@
 processing\DataRetriever.class
 cachemanagement\CacheStore.class
-cachemanagement\QueryProcessor.class
 processing\CacheController.class
 processing\ModuleRequestProcessors.class
 cachemanagement\CacheUpdater.class

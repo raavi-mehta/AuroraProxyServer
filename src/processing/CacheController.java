@@ -1,6 +1,5 @@
 package processing;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 import javax.ws.rs.core.Response;
@@ -10,95 +9,97 @@ import org.json.JSONException;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
+import cachemanagement.CacheChecker;
 import cachemanagement.CacheStore;
-import net.sf.ehcache.Cache;
+import cachemanagement.CacheUpdater;
 import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
 
 public class CacheController {
 	
 	private static int hits = 0;
 	private static int misses = 0;
-	
 
 	public static Response cacheProcess(String userQuery) throws JSONException, UnirestException {
 		
-		CacheManager manager = CacheStore.getCacheManager();
+		if (isImageRequest(userQuery)) 
+			return ProcessImageCacheQuery(userQuery);
 		
-		if (isImageRequest(userQuery)) {
-			
-			
-			HttpResponse<InputStream> imgR = null;
-			byte[] array = null;
-			try{
-				array = (byte[]) manager.getCache("imgcache").get(userQuery).getObjectValue();
-				System.out.println("IMG: Found in Cache");
-				hits++;
-			}catch(NullPointerException e){
-				imgR = DataRetriever.FetchAuroraImages(userQuery);
-				try {
-					array = new byte[imgR.getBody().available()];
-					imgR.getBody().read(array);
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
-				if (imgR.getStatus() == 200) 
-					manager.getCache("imgcache").put(new Element(userQuery,array));
+		else if(userQuery.contains("type=locations"))
+			return ProcessLocationCacheQuery(userQuery);
+		
+		else 
+			return ProcessGeneralCacheQuery(userQuery);
+		
+	}
+	
+	public static Response ProcessImageCacheQuery(String userQuery) throws JSONException, UnirestException{
+		try{
 
-				System.out.println("IMG: Not in Cache");
-				misses++;
-				
-			}
+			Response x = CacheChecker.ImageCacheCheck(userQuery);
+			System.out.println("IMG: Found in Cache");
+			hits++;
+			return x;
 			
-			return Response.status(200)
-					.entity(manager.getCache("imgcache").get(userQuery).getObjectValue())
-					.type("image/jpeg")
-					.build();
+		}catch(NullPointerException e){
 			
+			HttpResponse<InputStream> imgR = DataRetriever.FetchAuroraImages(userQuery);
+
+			if (imgR.getStatus() == 200) 
+				CacheUpdater.addImgtoCache(userQuery, imgR);
+			else 
+				return GenerateInvalidResponse(imgR);
 			
-		} else if(userQuery.contains("type=locations")){
-			
-			
-			
-			Cache syscache = manager.getCache("lcache");
-			try{
-				Response x = (Response) syscache.get(userQuery).getObjectValue();
-				System.out.println("JSON: Found in Cache");
-				hits++;
-				return x;
-			}catch(NullPointerException e){
-				System.out.println("JSON: Not in Cache");
-				misses++;
-				Response res = DataRetriever.FetchAuroraLocations(userQuery);
-				if (res.getStatus() == 200) 
-					syscache.put(new Element(userQuery,res));
-				return res;
-			}
-			
-			
-			
-			
-		} else {
-			
-			
-			
-			Cache syscache = manager.getCache("gcache");
-			try{
-				Response x = (Response) syscache.get(userQuery).getObjectValue();
-				System.out.println("JSON: Found in Cache");
-				hits++;
-				return x;
-			}catch(NullPointerException e){
-				System.out.println("JSON: Not in Cache");
-				misses++;
-				Response res = DataRetriever.FetchAuroraGeneral(userQuery);
-				if (res.getStatus() == 200) 
-					syscache.put(new Element(userQuery,res));
-				return res;
-			}
-			
-			
+			System.out.println("IMG: Not in Cache");
+			misses++;
+			return GenerateImageResponse(userQuery);
+
 		}
+	}
+	
+	public static Response ProcessLocationCacheQuery(String userQuery) throws JSONException, UnirestException{
+		try{
+			Response x = CacheChecker.LocationCacheCheck(userQuery);
+			System.out.println("JSON: Found in Cache");
+			hits++;
+			return x;
+		}catch(NullPointerException e){
+			System.out.println("JSON: Not in Cache");
+			misses++;
+			Response res = DataRetriever.FetchAuroraLocations(userQuery);
+			if (res.getStatus() == 200) 
+				CacheUpdater.addLocactiontoCache(userQuery, res);;
+			return res;
+		}
+	}
+	
+	public static Response ProcessGeneralCacheQuery(String userQuery) throws JSONException, UnirestException{
+		try{
+			Response x = CacheChecker.GeneralCacheCheck(userQuery);
+			System.out.println("JSON: Found in Cache");
+			hits++;
+			return x;
+		}catch(NullPointerException e){
+			System.out.println("JSON: Not in Cache");
+			misses++;
+			Response res = DataRetriever.FetchAuroraGeneral(userQuery);
+			if (res.getStatus() == 200) 
+				CacheUpdater.addGeneraltoCache(userQuery, res);
+			return res;
+		}
+	}
+	
+	public static Response GenerateInvalidResponse(HttpResponse<InputStream> imgR){
+
+		return Response.status(imgR.getStatus())
+				.entity(imgR.getBody()).type("application/json")
+				.build();
+	}
+	public static Response GenerateImageResponse(String userQuery){
+
+		return Response.status(200)
+				.entity(CacheStore.getCacheManager().getCache("imgcache").get(userQuery).getObjectValue())
+				.type("image/jpeg")
+				.build();
 	}
 	
 	public static int getHits() {
@@ -121,37 +122,28 @@ public class CacheController {
 	}
 	
 	public static void setLocationLifespan(int lifespan) {
-		CacheStore.getCacheManager().getCache("lcache").getCacheConfiguration().timeToLiveSeconds(lifespan);
+		CacheUpdater.setLocationLifespan(lifespan);
 	}
 	
 	public static void setImageLifespan(int lifespan) {
-		CacheStore.getCacheManager().getCache("imgcache").getCacheConfiguration().timeToLiveSeconds(lifespan);
+		CacheUpdater.setImageLifespan(lifespan);
 	}
 	
 	public static void setGeneralLifespan(int lifespan) {
-		CacheStore.getCacheManager().getCache("gcache").getCacheConfiguration().timeToLiveSeconds(lifespan);
+		CacheUpdater.setGeneralLifespan(lifespan);
+	}
+	
+	public static String getLifespans() {
+		return 	"general lifespan: " + getCacheManager().getCache("gcache").getCacheConfiguration()
+				.getTimeToLiveSeconds() + System.lineSeparator() +
+				"location lifespan: " + getCacheManager().getCache("lcache").getCacheConfiguration()
+				.getTimeToLiveSeconds() + System.lineSeparator() +
+				"image lifespan: " + getCacheManager().getCache("imgcache").getCacheConfiguration()
+				.getTimeToLiveSeconds() + System.lineSeparator();
 	}
 	
 	public static CacheManager getCacheManager() {
 		return CacheStore.getCacheManager();
 	}
-	
-	public static String getLifespans() {
-		return 	"general lifespan: " + getCacheManager().getCache("gcache").getCacheConfiguration().getTimeToLiveSeconds() + System.lineSeparator() +
-				"location lifespan: " + getCacheManager().getCache("lcache").getCacheConfiguration().getTimeToLiveSeconds() + System.lineSeparator() +
-				"image lifespan: " + getCacheManager().getCache("imgcache").getCacheConfiguration().getTimeToLiveSeconds() + System.lineSeparator();
-	}
-	
-//	public static int getGeneralLifespan() {
-//		return CacheStore.getGeneralLifespan();
-//	}
-//	
-//	public static int getLocationLifespan() {
-//		return CacheStore.getLocationLifespan();
-//	}
-//	
-//	public static int getImageLifespan() {
-//		return CacheStore.getImageLifespan();
-//	}
 	
 }

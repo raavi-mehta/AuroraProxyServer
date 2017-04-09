@@ -11,14 +11,10 @@ public class CacheStore {
 	
 	private static CacheManager manager = setupCache();
 	
-	// lifespans
-//	private static int generalLifespan = 60;
-//	private static int locationLifespan = 60;
-//	private static int imageLifespan = 60;
-	
 	private static CacheManager setupCache() {
-		//Create a Cache specifying its configuration.
+
 		CacheManager manager = CacheManager.create();
+		
 		Cache lcache = new Cache(
 		  new CacheConfiguration("lcache", 10000)
 		    .memoryStoreEvictionPolicy(MemoryStoreEvictionPolicy.LFU)
@@ -55,18 +51,5 @@ public class CacheStore {
 	public static CacheManager getCacheManager() {
 		return manager;
 	}
-	
-//	public static int getGeneralLifespan() {
-//		manager.getCache("lcache").getCacheConfiguration().getTimeToLiveSeconds();
-//		return generalLifespan;
-//	}
-//	
-//	public static int getLocationLifespan() {
-//		return locationLifespan;
-//	}
-//	
-//	public static int getImageLifespan() {
-//		return imageLifespan;
-//	}
 	
 }
