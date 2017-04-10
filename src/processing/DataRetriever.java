@@ -74,8 +74,6 @@ public class DataRetriever {
 	 */
 	public static HttpResponse<InputStream> FetchAuroraImages (String userQuery) throws JSONException,
 		UnirestException {
-		
-		
 		// If the Module referred is such that it is supposed to return an image
 		if (userQuery.contains("type=embed") || userQuery.contains("type=images&image")) {
 			return AuroraImageRetrieval(userQuery);
@@ -89,20 +87,15 @@ public class DataRetriever {
 	
 	}
 	
-	
 	public static Response FetchAuroraLocations (String userQuery) throws JSONException,
-	UnirestException {
-
+		UnirestException {
 		return ModuleRequestProcessors.locationRequestProcessor(userQuery);
-
-}
+	}
 	
 	public static Response FetchAuroraGeneral (String userQuery) throws JSONException,
-	UnirestException {
-
+		UnirestException {
 		return GeneralRequest(userQuery);
-
-}
+	}
 	/**
 	 * This method is used for retrieving images from the aurora API.
 	 * @param userQuery
@@ -121,14 +114,7 @@ public class DataRetriever {
 				e.printStackTrace();
 			}
 			
-			// Return the required image
-//			return Response.status(response.getStatus())
-//				.entity(response.getBody())
-//				.type("image/jpeg")
-//				.build();
 			return response;
-			
-
 	}
 	
 	/**

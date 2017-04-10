@@ -62,7 +62,14 @@ public class RequestHandler {
 			}
 		}
 	}
-
+	
+	/**
+	 * Allows the user to view the administrative stats such as the number of
+	 * hits and misses, and the current lifespans of each query/cache type.
+	 * 
+	 * This page may be access at <context root>/vX/admin/stats
+	 * @return
+	 */
 	@Path("admin/stats")
 	@GET
 	@Produces("text/plain") 
@@ -76,6 +83,12 @@ public class RequestHandler {
 				.build();
 	}
 	
+	/**
+	 * Allows the user to clear all the caches at.
+	 * 
+	 * This may be access by opening the page <context root>/vX/admin/clear
+	 * @return
+	 */
 	@Path("admin/clear")
 	@GET
 	@Produces("text/plain") 
@@ -87,6 +100,15 @@ public class RequestHandler {
 				.build();
 	}
 	
+	/**
+	 * Allows the user to set the caching lifespans for general queries,
+	 * location queries, and image queries. These lifespans (in seconds) are
+	 * entered as uri parameters general, location, and image respectively.
+	 * 
+	 * Ex: <context root>/vX/admin/lifespan?general=60&location=1000&image=15
+	 * @param uriInfo
+	 * @return
+	 */
 	@Path("admin/lifespan")
 	@GET
 	@Produces("text/plain") 

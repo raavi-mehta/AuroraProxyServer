@@ -68,11 +68,8 @@ public class ModuleRequestProcessors {
 			}
 			if(lat.equals("")){
 				return null;
-//				return Response.status(400)
-//						.entity("Requested Location id is not listed in the API Locations Module Response")
-//						.type("text/plain")
-//						.build();
 			}
+			
 			// Generate the google map query
 			googleMapsQuery = "https://maps.googleapis.com/maps/api/staticmap?center="+ lat + "," + lon + 
 					"&markers=color:blue%7Clabel:S%7C"+lat+","+lon+
@@ -90,11 +87,6 @@ public class ModuleRequestProcessors {
 				   Unirest.get(googleMapsQuery)    
 				   .asBinary();
 		
-		// Send the obtained image
-//		return Response.status(gm_response.getStatus())
-//				.entity(gm_response.getBody())
-//				.type("image/jpeg")
-//				.build();
 		return gm_response;
 	}
 	
@@ -126,14 +118,6 @@ public class ModuleRequestProcessors {
 		   .asJson();
 		
 		try {
-			/*
-			 * The Following commented out code adds the attribution to the JSONArray to be recieved by the locations 
-			 * module	
-			JSONArray JArray = new JSONArray(response.getBody().toString());
-			JSONObject Attribution = new JSONObject();
-			Attribution.put("attribution","Powered by Auroras.live!");
-			JArray.put(Attribution);
-			*/
 			
 			JSONObject json = new JSONObject(response.getBody());
 			
