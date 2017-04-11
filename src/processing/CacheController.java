@@ -59,7 +59,7 @@ public class CacheController {
 			return x;
 			
 		}catch(NullPointerException e){
-			
+			misses++;
 			HttpResponse<InputStream> imgR = DataRetriever.FetchAuroraImages(userQuery);
 
 			if (imgR.getStatus() == 200) 
@@ -68,7 +68,7 @@ public class CacheController {
 				return GenerateInvalidResponse(imgR);
 			
 			System.out.println("IMG: Not in Cache");
-			misses++;
+			
 			return GenerateImageResponse(userQuery);
 
 		}

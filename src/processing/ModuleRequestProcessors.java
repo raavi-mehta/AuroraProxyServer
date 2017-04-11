@@ -130,6 +130,7 @@ public class ModuleRequestProcessors {
 				.type("application/json")
 				.build();
 		} catch(JSONException e) {
+			
 			// Invalid Response or Request
 			return Response.status(400)
 				.entity("Aurora Server did not understand the request, please check your request")

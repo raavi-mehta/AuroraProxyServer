@@ -125,10 +125,9 @@ public class DataRetriever {
 	 * @throws UnirestException
 	 */
 	public static Response GeneralRequest(String userQuery) throws UnirestException{
-		
 		// Send request to the Aurora API 
 		HttpResponse<JsonNode> response = 
-		   Unirest.get("http://api.auroras.live/v1/?" + userQuery)             
+		   Unirest.get("https://api.auroras.live/v1/?" + userQuery)             
 		   .asJson();
 		try {
 			//Add attribution to the recieved json object
@@ -143,11 +142,13 @@ public class DataRetriever {
 				.build();
 		
 		} catch(JSONException e) {
+		
 			// Invalid Response or Request
 			return Response.status(400)
 				.entity("Aurora Server did not understand the request, please check your request")
 				.type("text/plain")
 				.build();
+			
 		}
 	}
 	

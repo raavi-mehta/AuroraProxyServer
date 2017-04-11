@@ -27,7 +27,6 @@ public class CacheStore {
 		    .memoryStoreEvictionPolicy(MemoryStoreEvictionPolicy.LFU)
 		    .eternal(false)
 		    .timeToLiveSeconds(60)
-		    .timeToIdleSeconds(30)
 		    .diskExpiryThreadIntervalSeconds(0)
 		    .persistence(new PersistenceConfiguration().strategy(Strategy.LOCALTEMPSWAP)));
 		
@@ -37,7 +36,6 @@ public class CacheStore {
 		    .memoryStoreEvictionPolicy(MemoryStoreEvictionPolicy.LFU)
 		    .eternal(false)
 		    .timeToLiveSeconds(60)
-		    .timeToIdleSeconds(30)
 		    .diskExpiryThreadIntervalSeconds(0)
 		    .persistence(new PersistenceConfiguration().strategy(Strategy.LOCALTEMPSWAP)));
 		 
@@ -47,7 +45,6 @@ public class CacheStore {
 				    .memoryStoreEvictionPolicy(MemoryStoreEvictionPolicy.LFU)
 				    .eternal(false)
 				    .timeToLiveSeconds(60)
-				    .timeToIdleSeconds(30)
 				    .diskExpiryThreadIntervalSeconds(0)
 				    .persistence(new PersistenceConfiguration().strategy(Strategy.LOCALTEMPSWAP)));
 		

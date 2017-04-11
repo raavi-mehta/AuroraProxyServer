@@ -35,7 +35,8 @@ public class RequestHandler {
 	public Response HandleRequest(@Context UriInfo uriInfo) throws UnirestException {
 		
 		String userQuery = uriInfo.getRequestUri().getQuery();
-		
+		if (userQuery!=null)
+		userQuery = userQuery.replaceAll(" ", "%20");
 		if (!uriInfo.getRequestUri().toString().contains("?type")) {
 			return Response.status(400)
 					.entity("Welcome to the SENG 401 - Group 1 - Proxy Server"
@@ -49,12 +50,16 @@ public class RequestHandler {
 				if (userQuery.contains("&no-caching=true")) {
 					userQuery = userQuery.replace("&no-caching=true", "");
 					System.out.println("No-Caching Enabled");
+					
+					System.out.println(userQuery);
+					
 					return DataRetriever.FetchAurora(userQuery);
 				}
 				
 				//return DataRetriever.FetchAurora(uriInfo);
 				return CacheController.cacheProcess(userQuery);
 			} catch (Exception e) {
+
 				return Response.status(400)
 						.entity("Aurora Server did not understand the request, please check your request")
 						.type("text/plain")
