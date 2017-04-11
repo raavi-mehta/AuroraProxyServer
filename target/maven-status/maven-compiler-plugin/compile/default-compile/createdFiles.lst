@@ -3,5 +3,5 @@ cachemanagement\CacheStore.class
 processing\CacheController.class
 processing\ModuleRequestProcessors.class
 cachemanagement\CacheUpdater.class
-cachemanagement\CacheChecker.class
+cachemanagement\CacheRetriever.class
 acquisition\RequestHandler.class
